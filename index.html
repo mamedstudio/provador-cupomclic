@@ -15,23 +15,35 @@
       --accent-gold: #e69c5e;
       --accent-gold-hover: #d18749;
       --accent-blue: #38bdf8;
+      --accent-green: #22c55e;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: flex-start; }
     .container { width: 100%; max-width: 650px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); margin-top: 20px; }
     
-    .logo-container { text-align: center; margin-bottom: 15px; }
-    .logo-img { max-width: 180px; width: 100%; height: auto; border-radius: 8px; display: inline-block; }
+    .logo-container { text-align: center; margin-bottom: 20px; }
+    .logo-img { max-width: 220px; width: 100%; height: auto; border-radius: 8px; display: inline-block; }
 
     h1 { color: var(--accent-gold); font-size: 1.5rem; text-align: center; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
     p.subtitle { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 25px; }
     
-    .form-group { margin-bottom: 20px; background: var(--input-bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); }
-    label { display: block; font-size: 0.85rem; font-weight: bold; color: var(--accent-blue); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-    input[type="file"], select, input[type="text"] { width: 100%; padding: 12px; background: var(--card-bg); border: 1px solid #1e3a5f; border-radius: 8px; color: var(--text-main); font-size: 0.95rem; outline: none; }
+    .form-group { margin-bottom: 20px; background: var(--input-bg); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color); }
+    label { display: block; font-size: 0.85rem; font-weight: bold; color: var(--accent-blue); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
     
-    .btn-main { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--accent-gold), #c47c3e); border: none; border-radius: 8px; color: #000; font-weight: bold; font-size: 1.05rem; cursor: pointer; margin-top: 10px; }
+    /* BOTÕES DUPLOS (CÂMERA E GALERIA) */
+    .file-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .btn-upload { background: #1e293b; border: 1px solid #334155; color: var(--text-main); padding: 12px 8px; border-radius: 8px; text-align: center; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-upload:hover { background: #334155; border-color: var(--accent-gold); }
+    
+    /* INPUTS OCULTOS */
+    input[type="file"] { display: none; }
+    
+    .preview-filename { font-size: 0.8rem; color: var(--accent-green); margin-top: 8px; display: none; text-align: center; font-weight: bold; }
+
+    select { width: 100%; padding: 12px; background: var(--card-bg); border: 1px solid #1e3a5f; border-radius: 8px; color: var(--text-main); font-size: 0.95rem; outline: none; }
+    
+    .btn-main { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-gold), #c47c3e); border: none; border-radius: 8px; color: #000; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
     .btn-main:hover { opacity: 0.95; }
     .btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -43,7 +55,7 @@
 
     .results-container { margin-top: 25px; display: none; text-align: center; }
     .img-preview { width: 100%; max-width: 450px; border-radius: 12px; border: 2px solid var(--accent-gold); margin-bottom: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); }
-    .btn-download { display: inline-block; width: 100%; text-align: center; background: var(--accent-gold); color: #000; padding: 12px; border-radius: 8px; font-weight: bold; text-decoration: none; }
+    .btn-download { display: inline-block; width: 100%; text-align: center; background: var(--accent-gold); color: #000; padding: 14px; border-radius: 8px; font-weight: bold; text-decoration: none; font-size: 1rem; }
   </style>
 </head>
 <body>
@@ -55,16 +67,31 @@
     <h1>👗 PROVADOR VIRTUAL</h1>
     <p class="subtitle">Veja como qualquer roupa fica na cliente instantaneamente com IA</p>
 
+    <!-- ETAPA 1: FOTO DA CLIENTE -->
     <div class="form-group">
       <label>1. FOTO DA CLIENTE OU MODELO:</label>
-      <input type="file" id="fotoPessoa" accept="image/*" capture="user">
+      <div class="file-buttons">
+        <label for="clienteCam" class="btn-upload">📸 Abrir Câmera</label>
+        <label for="clienteFile" class="btn-upload">📁 Galeria / Arquivo</label>
+      </div>
+      <input type="file" id="clienteCam" accept="image/*" capture="user" onchange="atualizarStatus('cliente', this)">
+      <input type="file" id="clienteFile" accept="image/*" onchange="atualizarStatus('cliente', this)">
+      <div id="statusCliente" class="preview-filename"></div>
     </div>
 
+    <!-- ETAPA 2: FOTO DA ROUPA -->
     <div class="form-group">
-      <label>2. FOTO DA PEÇA DE ROUPA (CABIDE OU FOTO PLANO):</label>
-      <input type="file" id="fotoRoupa" accept="image/*">
+      <label>2. FOTO DA ROUPA (CABIDE OU FOTO PLANO):</label>
+      <div class="file-buttons">
+        <label for="roupaCam" class="btn-upload">📸 Tirar Foto</label>
+        <label for="roupaFile" class="btn-upload">📁 Galeria / Arquivo</label>
+      </div>
+      <input type="file" id="roupaCam" accept="image/*" capture="environment" onchange="atualizarStatus('roupa', this)">
+      <input type="file" id="roupaFile" accept="image/*" onchange="atualizarStatus('roupa', this)">
+      <div id="statusRoupa" class="preview-filename"></div>
     </div>
 
+    <!-- ETAPA 3: CATEGORIA -->
     <div class="form-group">
       <label>3. TIPO DA PEÇA DE VESTUÁRIO:</label>
       <select id="categoriaSelect">
@@ -89,7 +116,27 @@
   </div>
 
   <script>
-    // Função para comprimir fotos pesadas de celulares (Reduz 15MB para ~300KB)
+    // Guarda os arquivos selecionados
+    let arquivoCliente = null;
+    let arquivoRoupa = null;
+
+    function atualizarStatus(tipo, input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        if (tipo === 'cliente') {
+          arquivoCliente = file;
+          const status = document.getElementById('statusCliente');
+          status.innerText = '✅ Foto da cliente selecionada: ' + file.name;
+          status.style.display = 'block';
+        } else if (tipo === 'roupa') {
+          arquivoRoupa = file;
+          const status = document.getElementById('statusRoupa');
+          status.innerText = '✅ Foto da roupa selecionada: ' + file.name;
+          status.style.display = 'block';
+        }
+      }
+    }
+
     function comprimirImagem(file, maxWidth = 1024, quality = 0.8) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -123,8 +170,6 @@
     }
 
     async function provarRoupa() {
-      const inputPessoa = document.getElementById('fotoPessoa');
-      const inputRoupa = document.getElementById('fotoRoupa');
       const categoriaSelect = document.getElementById('categoriaSelect');
       const btn = document.getElementById('btnProvar');
       const loadingBox = document.getElementById('loadingBox');
@@ -132,7 +177,7 @@
       const fotoResultado = document.getElementById('fotoResultado');
       const btnDownload = document.getElementById('btnDownload');
 
-      if (!inputPessoa.files[0] || !inputRoupa.files[0]) {
+      if (!arquivoCliente || !arquivoRoupa) {
         alert('Por favor, selecione TANTO a foto da cliente QUANTO a foto da roupa!');
         return;
       }
@@ -143,9 +188,8 @@
       loadingBox.style.display = 'block';
 
       try {
-        // Comprime ambas as fotos antes de enviar para Vercel/Fal.ai
-        const pessoaBase64 = await comprimirImagem(inputPessoa.files[0]);
-        const roupaBase64 = await comprimirImagem(inputRoupa.files[0]);
+        const pessoaBase64 = await comprimirImagem(arquivoCliente);
+        const roupaBase64 = await comprimirImagem(arquivoRoupa);
 
         const res = await fetch('/api/provador', {
           method: 'POST',
