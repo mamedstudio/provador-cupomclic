@@ -11,7 +11,7 @@ export default async function handler(req, res) {
       try { body = JSON.parse(body); } catch(e){}
     }
 
-    const { human_image, garment_image, category } = body;
+    const { human_image, garment_image, category, description } = body;
 
     if (!human_image || !garment_image) {
       return res.status(400).json({ erro: 'Envie a foto da pessoa e a foto da roupa!' });
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     console.log("👗 Processando Provador Virtual no IDM-VTON... Categoria:", category);
 
-    // Chamada oficial da API IDM-VTON no Fal.ai
+    // Chamada oficial enviando o campo 'description' obrigatório pelo Fal.ai
     const respostaIA = await fetch("https://fal.run/fal-ai/idm-vton", {
       method: "POST",
       headers: {
@@ -36,7 +36,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         human_image_url: human_image,
         garment_image_url: garment_image,
-        category: category || "upper_body"
+        category: category || "upper_body",
+        description: description || "clothing item" // CAMPO OBRIGATÓRIO
       })
     });
 
